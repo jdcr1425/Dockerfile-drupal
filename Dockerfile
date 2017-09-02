@@ -59,45 +59,17 @@ RUN { \
 echo “memory_limit = 256M”; \
 } >> /etc/php/7.0/cli/php.ini
 
-#Drupal
-
-#Descargamos drupal desde el sitio web
-
-RUN apt update && apt upgrade
-
-RUN apt install wget -y
-
-RUN wget http://ftp.drupal.org/files/projects/drupal-8.3.7.zip
-
-#Descomprimimos
-
-RUN apt-get install zip unzip
-
-RUN unzip drupal-*.zip
-
-
-############################################################### 
-
-#Cambiamos ciertos permisos
-
-RUN chown www-data:www-data -R /var/www/html/
-RUN chmod -R 755 /var/www/html/
-
-#Configuraciones para drupal 
-
-RUN mkdir -p  /var/www/html/sites/default/files
-
-#RUN chmod 664 /var/www/html/sites/default/settings.php
-
-RUN chown -R :www-data /var/www/html/*
-
-RUN service mysql start
 
 
 #Para construir nuestra imagen
 
 #sudo docker build -t imagename .
 
-#https://docs.moodle.org/all/es/Guia_de_instalacion_paso-a-paso_para_Ubuntu_16.04
+ENV DRUPAL_VERSION 8.3.7
+ENV DRUPAL_MD5 e7b1f382d6bd2b18d4b4aca01d335bc0
 
-
+RUN curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz" -o drupal.tar.gz \
+	&& echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - \
+	&& tar -xz --strip-components=1 -f drupal.tar.gz \
+	&& rm drupal.tar.gz \
+	&& chown -R www-data:www-data sites modules themes
